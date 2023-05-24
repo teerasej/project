@@ -1,6 +1,7 @@
 import os
 import dotenv
 import azure.cognitiveservices.speech as speechsdk
+import openai
 
 # Load the environment file
 dotenv.load_dotenv()
@@ -29,6 +30,27 @@ result = speech_recognizer.recognize_once_async().get()
 if result.reason == speechsdk.ResultReason.RecognizedSpeech:
     # Print the transcribed text
     print("Transcription: {}".format(result.text))
+
+    openai.api_type = "azure"
+    openai.api_base = "https://openai-nextflow.openai.azure.com/"
+    openai.api_version = "2022-12-01"
+    openai.api_key = os.getenv("OPENAI_API_KEY")
+
+    response = openai.Completion.create(
+        engine="MyDavinci",
+        prompt=("For the below text in triple ticks, provide a JSON structure that extracts the following text into the following keys. Use provided categories for intent:\n- short_summary (in thai)\n- sentiment\n- intent: \"refund\", \"need customer support\"\n\n" 
+                + "```" + result.text + "```" 
+                + "\n\nResponse:}"),
+        temperature=0,
+        max_tokens=1000,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0,
+        best_of=1,
+        stop=None)    
+    
+    print(response['choices'][0]['text'])
+
 elif result.reason == speechsdk.ResultReason.NoMatch:
     print("No speech could be recognized")
 elif result.reason == speechsdk.ResultReason.Canceled:
@@ -36,3 +58,5 @@ elif result.reason == speechsdk.ResultReason.Canceled:
     print("Speech recognition canceled: {}".format(cancellation_details.reason))
     if cancellation_details.reason == speechsdk.CancellationReason.Error:
         print("Error details: {}".format(cancellation_details.error_details))
+
+

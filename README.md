@@ -10,6 +10,9 @@ You should create your `.env` file with following variables:
 ```
 AZURE_SUBSCRIPTION_KEY=
 AZURE_REGION=
+
+OPENAI_ENDPOINT=
+OPENAI_API_KEY=
 ```
 
 ## Noted
